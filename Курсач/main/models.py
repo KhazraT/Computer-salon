@@ -66,7 +66,7 @@ class Order(models.Model):
 
 class Returns(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.IntegerField()
+    product = models.CharField(max_length=255)
     quantity = models.IntegerField()
     price = models.FloatField()
     date_time = models.DateTimeField()

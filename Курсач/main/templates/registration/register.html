@@ -17,7 +17,7 @@
       <input type="password" name="password2" placeholder="Подтвердите пароль"/>
       <input type="submit" value="Создать"/>
 <!--      <button>Создать</button>-->
-      <p class="message">Уже зарегистрированы? <a href="/profile">Войти</a></p>
+      <p class="message">Уже зарегистрированы? <a href="{% url 'main:profile' %}">Войти</a></p>
       {{ form.errors }}
     </form>
 

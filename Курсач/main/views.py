@@ -9,6 +9,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from datetime import datetime
 from django.utils import timezone
+from django.template.defaulttags import register
+@register.filter
+def get_key(dictionary, key):
+    return dictionary[key]
+@register.filter
+def arr(array, index):
+    return array[index]
 
 # Представление для главной страницы
 def index(request):
@@ -171,10 +178,10 @@ def orders_detail(request):
     context['order_items'] = orders
 
     if request.POST:
-        product_id = int(request.POST['return'])
+        product_id = request.POST['return']
         quantity = int(request.POST['quantity'])
         reason = request.POST['reason']
-        product = orders.get(pk=product_id)
+        product = orders.get(product=product_id)
         my_user = User.objects.get(id=user.id)
 
         if quantity < product.quantity:
@@ -232,3 +239,87 @@ def add_new_item(request):
 
     products = Product.objects.all()
     return render(request, 'main/index.html', {'products': products})
+
+
+@permission_required(perm='main.otchet', raise_exception=True)
+def otchet(request):
+    context = {}
+
+    orders = Order.objects.all()
+    returns = Returns.objects.all()
+    data = {
+        'card': {},
+        'cash': {},
+        'return': {}
+    }
+
+    for order in orders:
+        date = order.date_time.date().strftime("%d.%m.%Y")
+        if date in data[order.payment_method]:
+            data[order.payment_method][date].append([order.product, order.total_price()])
+        else:
+            data[order.payment_method][date]  = [[order.product, order.total_price()]]
+    for r in returns:
+        date = r.date_time.date().strftime("%d.%m.%Y")
+        if date in data['return']:
+            data['return'][date].append([r.product, r.total_price()])
+        else:
+            data['return'][date]  = [[r.product, r.total_price()]]
+
+    card_sum = 0
+    for i in data['card']:
+        for j in data['card'][i]:
+            card_sum += float(j[1])
+    cash_sum = 0
+    for i in data['cash']:
+        for j in data['cash'][i]:
+            cash_sum += float(j[1])
+    return_sum = 0
+    for i in data['return']:
+        for j in data['return'][i]:
+            return_sum += float(j[1])
+    print(data)
+    prices = {
+        'card': [card_sum, {}],
+        'cash': [cash_sum, {}],
+        'return': [return_sum, {}]
+    }
+
+    for order in orders:
+        date = order.date_time.date().strftime("%d.%m.%Y")
+        summ = 0
+        for d in data[order.payment_method][date]:
+            summ += float(d[1])
+        prices[order.payment_method][1][date] = summ
+
+    # for order in orders:
+    #     date = order.date_time.date().strftime("%d.%m.%Y")
+    #     summ = 0
+    #     for d in data['cash'][date]:
+    #         summ += float(d[1])
+    #     prices['cash'][1][date] = summ
+
+    for r in returns:
+        date = r.date_time.date().strftime("%d.%m.%Y")
+        summ = 0
+        for d in data['return'][date]:
+            summ += float(d[1])
+        prices['return'][1][date] = summ
+
+    print(prices)
+
+
+    sum_by_day = {}
+
+    for order in orders:
+        date = order.date_time.date().strftime("%d.%m.%Y")
+        if date in sum_by_day:
+            sum_by_day[date] += prices[order.payment_method][1][date]
+        else:
+            sum_by_day[date] = prices[order.payment_method][1][date]
+
+    context['sum_by_day'] = sum_by_day
+    context['data'] = data
+    context['prices'] = prices
+
+    return render(request, 'main/otchet.html', context=context)
