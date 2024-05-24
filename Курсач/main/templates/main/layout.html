@@ -27,11 +27,11 @@
                  <button class="btn btn-outline-info" type="submit">Поиск</button>
              </form>
 
-             <a class="navbar-brand" href="/cart">
+             <a class="navbar-brand" href="{% url 'main:cart_detail' %}">
                  <img src="{% static 'main/img/корзина.png' %}" alt="cart" width="50" height="40">
              </a>
 
-             <a class="navbar-brand" href="/profile">
+             <a class="navbar-brand" href="{% url 'main:profile' %}">
                  <img src="{% static 'main/img/аккаунт.png' %}" alt="account" width="50" height="50">
              </a>
          </div>
