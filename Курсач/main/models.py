@@ -23,12 +23,10 @@ class Product(models.Model):
 class User(AbstractUser):
     name = models.CharField(verbose_name='ФИО', blank=True, null=True, max_length=100)
     balance = models.FloatField(verbose_name='Баланс', blank=True, null=True, default=0)
-    credit_limit = models.FloatField(verbose_name='Кредит', blank=True, null=True)
-    debt = models.FloatField(verbose_name='Долг клиента', blank=True, null=True)
-    credit_remain = models.FloatField(verbose_name='Остаток по кредиту', blank=True, null=True)
     extra_info = models.TextField(verbose_name='Дополнительная информация', max_length=1000, blank=True, null=True)
     registration_code = models.IntegerField(verbose_name='Код учёта', blank=True, null=True)
     registration_code_flag = models.BooleanField(verbose_name='без имени', blank=True, null=True, default=0)
+    total_purchase = models.FloatField(default=0)
 
 
 # Модель для корзины.
@@ -52,6 +50,8 @@ class Order(models.Model):
     product = models.CharField(max_length=255)
     quantity = models.IntegerField(default=1)
     price = models.FloatField('Стоимость товара', default=1)
+    date_time = models.DateTimeField()
+    payment_method = models.CharField(max_length=100)
 
     def __str__(self):
         return self.user.username
@@ -59,6 +59,9 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'Order'
         verbose_name_plural = 'Orders'
+
+    def total_price(self):
+        return self.price * self.quantity
 
 
 # Дополнительная модель для заказа (Order2).

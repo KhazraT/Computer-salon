@@ -1,6 +1,6 @@
 {% extends 'main/layout.html' %}
 {% load static %}
-{%  block title %}Страница заказов{% endblock %}
+{%  block title %}История заказов{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css"/>
@@ -12,40 +12,6 @@
 
 
 {% block content %}
-    <h1>Заказы</h1>
-    <table id="example" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Имя</th>
-                <th>Общий счёт покупок</th>
-                <th>Текущий счёт клинета</th>
-                <th>Потолок кредита</th>
-                <th>Текущий долг</th>
-                <th>Остаток кредита</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for item in user_details%}
-            <tr>
-                <td>{{item.user.username}}</td>
-                <td>{{item.spent_money}}</td>
-                <td>{{item.account_money}}</td>
-                <td>{{item.credit_limit}}</td>
-                <td>{{item.current_debt}}</td>
-                <td>{{item.credit_remains}}</td>
-            </tr>
-        {% endfor %}
-        <tfoot>
-            <tr>
-                <th>Имя</th>
-                <th>Общий счёт покупок</th>
-                <th>Текущий счёт клинета</th>
-                <th>Потолок кредита</th>
-                <th>Текущий долг</th>
-                <th>Остаток кредита</th>
-            </tr>
-        </tfoot>
-    </table>
 {% endblock %}
 
 
