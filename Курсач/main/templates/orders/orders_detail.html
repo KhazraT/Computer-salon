@@ -7,29 +7,48 @@
 {% endblock %}
 
 
-
-
-
-
 {% block content %}
+{% if error == 0  %}
+    <div class="container-lg" style="margin-top: 40px;">
+    {% if order_items %}
+        <table class="table table-bordered border-dark">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total Price</th>
+                    <th>Reason for the return, amount</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for item in order_items %}
+                    <tr>
+                        <td>{{ item.date_time }}</td>
+                        <td>{{ item.product }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.total_price }}</td>
+                        <form method="post">
+                            {% csrf_token %}
+                            <td><input type="text" name="reason" placeholder="Причина возврата" required>
+                                <input type="number" min="1" max="{{item.quantity}}" name="quantity" required></td>
+                            <td><button type="submit" value="{{item.id}}" name="return">Оформить возврат</button></td>
+                        </form>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Вы еще не совершали покупок</p>
+    {% endif %}
+{% else %}
+        <h1 align="center">Произошла непредвиденная ошибка</h1>
+        <h2 align="center">Пожалуйста, обновите страницу</h2>
+{% endif %}
 {% endblock %}
 
 
 
-{% block script %}
-
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
-    <script type="text/javascript"></script>
-    <script>
-    new DataTable('#example', {
-        layout: {
-            bottomEnd: {
-                paging: {
-                    boundaryNumbers: false
-                }
-            }
-        }
-    });
-    </script>
-{% endblock %}

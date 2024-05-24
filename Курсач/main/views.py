@@ -8,7 +8,7 @@ from .models import *
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from datetime import datetime
-
+from django.utils import timezone
 
 # Представление для главной страницы
 def index(request):
@@ -150,16 +150,6 @@ def cart_detail(request):
                     return redirect('main:cart_detail')
 
 
-                # for item in cart_items:
-                #     order = Order()
-                #     order.user = user
-                #     order.product = item.product
-                #     order.quantity = item.quantity
-                #     order.price = Product.objects.get(name=item.product).price
-                #     order.date_time = datetime.now()
-                #     order.save()
-                #     remove_from_cart(request, item.product)
-
 
     context['cart_items'] = cart_items
     context['total_price'] = total_price
@@ -167,39 +157,69 @@ def cart_detail(request):
 
     return render(request, "cart/cart_detail.html", context)
 
-# Представление для обработки заказов
-# @login_required
-# def orders(request):
-#     user = request.user
-#     cart_items = Cart.objects.filter(user=request.user)
-#     for item in cart_items:
-#         order = Order()
-#         order.user = user
-#         order.product = item.product
-#         order.quantity = item.quantity
-#         order.price = Product.objects.get(name=item.product).price
-#         order.date_time = datetime.now()
-#         order.save()
-#         remove_from_cart(request, item.product)
-#     user.balance -= sum(item.quantity * Product.objects.get(name=item.product).price for item in cart_items)
-#     user.save()
-#     return render(request, "cart/cart_detail.html")
 
 
+@login_required()
 def orders_detail(request):
     context = {
-        ''
+        'order_items': '',
+        'error': 0,
     }
 
     user = request.user
-    orders = Order.objects.filter(user_id=user.id)
-    for order in orders:
-        print(order)
-#номер заказа
+    orders = Order.objects.filter(user_id=user.id).order_by('date_time')
+    context['order_items'] = orders
+
+    if request.POST:
+        product_id = int(request.POST['return'])
+        quantity = int(request.POST['quantity'])
+        reason = request.POST['reason']
+        product = orders.get(pk=product_id)
+        my_user = User.objects.get(id=user.id)
+
+        if quantity < product.quantity:
+            my_return = Returns()
+            my_return.product = product_id
+            my_return.price = product.price
+            my_return.quantity = quantity
+            my_return.user = user
+            my_return.payment_method = product.payment_method
+            my_return.reason = reason
+            my_return.date_time = timezone.now()
+
+            if my_return.payment_method == 'card':
+                my_user.balance += my_return.total_price()
+                my_user.save()
+
+            my_return.save()
+
+
+
+
+
+            product.quantity -= quantity
+            product.save()
+
+        elif quantity == product.quantity:
+
+            my_return = Returns.objects.create(user=user, product=product_id, quantity=quantity, price=product.price, payment_method=product.payment_method, reason=reason, date_time=timezone.now())
+
+            if my_return.payment_method == 'card':
+                my_user.balance += my_return.total_price()
+                my_user.save()
+
+            my_return.save()
+
+
+            product.delete()
+
+        else:
+            context['error'] = 1
+
+
 
     return render(request, "orders/orders_detail.html", context)
 
-    # return HttpResponse("<h1>Доработать надо</h1>")
 
 # Представление для добавления нового товара
 def add_new_item(request):

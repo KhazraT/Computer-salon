@@ -64,11 +64,14 @@ class Order(models.Model):
         return self.price * self.quantity
 
 
-# Дополнительная модель для заказа (Order2).
-class Order2(models.Model):
+class Returns(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    spent_money = models.IntegerField(default=0)
-    account_money = models.IntegerField(default=0)
-    credit_limit = models.IntegerField(default=1)
-    current_debt = models.IntegerField(default=1)
-    credit_remains = models.IntegerField(default=1)
+    product = models.IntegerField()
+    quantity = models.IntegerField()
+    price = models.FloatField()
+    date_time = models.DateTimeField()
+    payment_method = models.CharField(max_length=100)
+    reason = models.TextField()
+
+    def total_price(self):
+        return self.quantity * self.price
