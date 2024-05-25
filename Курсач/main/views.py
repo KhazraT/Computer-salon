@@ -184,10 +184,12 @@ def orders_detail(request):
     context['order_items'] = orders
 
     if request.POST:
-        product_id = request.POST['return']
+        product = request.POST['return']
+        product_id = product.split(';')[0]
+        document_ = product.split(';')[1]
         quantity = int(request.POST['quantity'])
         reason = request.POST['reason']
-        product = orders.get(product=product_id)
+        product = orders.get(document_number=document_, product=product_id)
         my_user = User.objects.get(id=user.id)
 
         if quantity < product.quantity:
@@ -348,3 +350,45 @@ def otchet(request):
     context['prices'] = prices
 
     return render(request, 'main/otchet.html', context=context)
+
+@login_required
+def view_order(request, order_number):
+    context = {
+        'error': 0,
+    }
+    try:
+        order_ = Order.objects.filter(document_number=order_number)
+        context['order_'] = order_
+        context['order_number'] = order_[0].document_number
+        context['order_date'] = order_[0].date_time
+        context['payment_method'] = order_[0].payment_method
+        summ = 0
+        for item in order_:
+            summ += item.total_price()
+
+        context['total_price'] = summ
+    except:
+        context['error'] = 1
+
+    return render(request, 'main/order.html', context=context)
+
+
+# def view_return_product(request, order_number):
+#     context = {
+#         'error': 0,
+#     }
+#     try:
+#         order_ = Order.objects.filter(document_number=order_number)
+#         context['order_'] = order_
+#         context['order_number'] = order_[0].document_number
+#         context['order_date'] = order_[0].date_time
+#         context['payment_method'] = order_[0].payment_method
+#         summ = 0
+#         for item in order_:
+#             summ += item.total_price()
+#
+#         context['total_price'] = summ
+#     except:
+#         context['error'] = 1
+#
+#     return render(request, 'main/return_product.html', context=context)

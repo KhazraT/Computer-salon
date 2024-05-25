@@ -20,6 +20,7 @@
                     <th>Quantity</th>
                     <th>Price</th>
                     <th>Total Price</th>
+                    <th>Payment method</th>
                     <th>Reason for the return, amount</th>
                     <th></th>
                 </tr>
@@ -28,16 +29,17 @@
                 {% for item in order_items %}
                     <tr>
                         <td>{{ item.date_time }}</td>
-                        <td>{{ item.document_number }}</td>
+                        <td><a href="{% url 'main:order' item.document_number %}">{{ item.document_number }}</a></td>
                         <td>{{ item.product }}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.price }}</td>
                         <td>{{ item.total_price }}</td>
+                        <td>{{ item.payment_method }}</td>
                         <form method="post">
                             {% csrf_token %}
                             <td><input type="text" name="reason" placeholder="Причина возврата" required>
                                 <input type="number" min="1" max="{{item.quantity}}" name="quantity" required></td>
-                            <td><button type="submit" value="{{item.product}}" name="return">Оформить возврат</button></td>
+                            <td><button type="submit" value="{{item.product}};{{item.document_number}}" name="return">Оформить возврат</button></td>
                         </form>
                     </tr>
                 {% endfor %}
