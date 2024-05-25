@@ -96,5 +96,23 @@
         </tbody>
     </table>
 </div>
+
+<div class="container-lg" style="margin-top: 40px;">
+    <form method="post">
+        {% csrf_token %}
+        <p><b>Отфильтровать по ID пользователя</b></p>
+        <label for="ID">ID</label>
+        <input type="number" min="1" id="ID" name="ID"><br><br>
+        <p><b>Отфильтровать по дате</b></p>
+        <label for="start_date">От</label>
+        <input type="date" id="start_date" name="start_date"><br>
+        <label for="end_date">До</label>
+        <input type="date" id="end_date" name="end_date"><br>
+        <input type="submit" value="Отфильтровать">
+
+    </form>
+
+</div>
+
 </body>
 </html>

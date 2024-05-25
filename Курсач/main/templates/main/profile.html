@@ -6,9 +6,9 @@
 
 <h1> Добро пожаловать, {{ user.username }}</h1>
 
-{% if perms.main.view_order2 %}
+
 <a href ="{% url 'main:orders_detail' %}"> Смотреть все заказы </a>
-{% endif %}
+
 
 <form method="post">
   {% csrf_token %}

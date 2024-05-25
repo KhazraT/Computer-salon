@@ -52,6 +52,7 @@ class Order(models.Model):
     price = models.FloatField('Стоимость товара', default=1)
     date_time = models.DateTimeField()
     payment_method = models.CharField(max_length=100)
+    document_number = models.CharField(max_length=255)
 
     def __str__(self):
         return self.user.username
@@ -72,6 +73,8 @@ class Returns(models.Model):
     date_time = models.DateTimeField()
     payment_method = models.CharField(max_length=100)
     reason = models.TextField()
+    document_number = models.CharField(max_length=255)
+    return_document_number = models.CharField(max_length=255)
 
     def total_price(self):
         return self.quantity * self.price

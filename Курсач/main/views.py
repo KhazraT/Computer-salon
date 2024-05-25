@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import permission_required
 from datetime import datetime
 from django.utils import timezone
 from django.template.defaulttags import register
+from random import randint
 @register.filter
 def get_key(dictionary, key):
     return dictionary[key]
@@ -108,13 +109,16 @@ def cart_detail(request):
                         my_user.total_purchase += total_price
                         my_user.balance -= total_price
 
+                        document_number = timezone.now().strftime("#O%Y%m%d") + str(randint(10000,99999))
+
                         for item in cart_items:
                             order = Order()
+                            order.document_number = document_number
                             order.user = user
                             order.product = item.product
                             order.quantity = item.quantity
                             order.price = item.price
-                            order.date_time = datetime.now()
+                            order.date_time = timezone.now()
                             order.payment_method = payment_method
                             order.save()
 
@@ -135,13 +139,15 @@ def cart_detail(request):
                 elif payment_method == 'cash':
                     my_user.total_purchase += total_price
 
+                    document_number = timezone.now().strftime("#O%Y%m%d") + str(randint(10000, 99999))
                     for item in cart_items:
                         order = Order()
+                        order.document_number = document_number
                         order.user = user
                         order.product = item.product
                         order.quantity = item.quantity
                         order.price = item.price
-                        order.date_time = datetime.now()
+                        order.date_time = timezone.now()
                         order.payment_method = payment_method
                         order.save()
 
@@ -186,6 +192,10 @@ def orders_detail(request):
 
         if quantity < product.quantity:
             my_return = Returns()
+            document_number = timezone.now().strftime("#R%Y%m%d") + str(randint(10000, 99999))
+
+            my_user.document_number = product.document_number
+            ny_user.return_document_number = document_number
             my_return.product = product_id
             my_return.price = product.price
             my_return.quantity = quantity
@@ -208,8 +218,16 @@ def orders_detail(request):
             product.save()
 
         elif quantity == product.quantity:
-
-            my_return = Returns.objects.create(user=user, product=product_id, quantity=quantity, price=product.price, payment_method=product.payment_method, reason=reason, date_time=timezone.now())
+            document_number = timezone.now().strftime("#R%Y%m%d") + str(randint(10000, 99999))
+            my_return = Returns.objects.create(user=user,
+                                               document_number=product.document_number,
+                                               return_document_number=document_number,
+                                               product=product_id,
+                                               quantity=quantity,
+                                               price=product.price,
+                                               payment_method=product.payment_method,
+                                               reason=reason,
+                                               date_time=timezone.now())
 
             if my_return.payment_method == 'card':
                 my_user.balance += my_return.total_price()
@@ -247,6 +265,22 @@ def otchet(request):
 
     orders = Order.objects.all()
     returns = Returns.objects.all()
+    if request.POST:
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        ID = request.POST['ID']
+        if start_date != '':
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            orders = orders.filter(date_time__gte=start_date)
+            returns = returns.filter(date_time__gte=start_date)
+        if end_date != '':
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            orders = orders.filter(date_time__lte=end_date)
+            returns = returns.filter(date_time__lte=end_date)
+        if ID:
+            orders = orders.filter(user_id=ID)
+            returns = returns.filter(user_id=ID)
+
     data = {
         'card': {},
         'cash': {},
@@ -278,7 +312,6 @@ def otchet(request):
     for i in data['return']:
         for j in data['return'][i]:
             return_sum += float(j[1])
-    print(data)
     prices = {
         'card': [card_sum, {}],
         'cash': [cash_sum, {}],
@@ -292,13 +325,6 @@ def otchet(request):
             summ += float(d[1])
         prices[order.payment_method][1][date] = summ
 
-    # for order in orders:
-    #     date = order.date_time.date().strftime("%d.%m.%Y")
-    #     summ = 0
-    #     for d in data['cash'][date]:
-    #         summ += float(d[1])
-    #     prices['cash'][1][date] = summ
-
     for r in returns:
         date = r.date_time.date().strftime("%d.%m.%Y")
         summ = 0
@@ -306,7 +332,6 @@ def otchet(request):
             summ += float(d[1])
         prices['return'][1][date] = summ
 
-    print(prices)
 
 
     sum_by_day = {}

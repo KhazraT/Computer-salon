@@ -15,6 +15,7 @@
             <thead>
                 <tr>
                     <th>Date</th>
+                    <th>Document number</th>
                     <th>Product</th>
                     <th>Quantity</th>
                     <th>Price</th>
@@ -27,6 +28,7 @@
                 {% for item in order_items %}
                     <tr>
                         <td>{{ item.date_time }}</td>
+                        <td>{{ item.document_number }}</td>
                         <td>{{ item.product }}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.price }}</td>
